@@ -77,6 +77,18 @@
   .zoneTime { font-weight: 800; }
   .zoneLine3 { color: var(--muted); font-size: 11px; font-weight: 700; }
 
+  /* Mobile: collapse zones list to first 3 when .zones has .collapsed */
+  .zones.collapsed .zoneItem:nth-child(n+4) { display: none; }
+  .zonesToggle {
+    display: none; margin: 8px 0 6px; text-align: center;
+  }
+  .zonesToggle .btn { padding: 6px 10px; font-size: 13px; }
+  @media (max-width: 640px) {
+    .zonesToggle { display: block; }
+  }
+  .zonesToggle .chev { margin-right: 8px; transition: transform 180ms ease; }
+  .zonesToggle .btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+
   footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 6px; margin-bottom: 36px; }
 
     .explain { border-radius: 14px; border: 1px solid rgba(255,255,255,0.10); background: var(--panel); padding: 14px; color: var(--muted); font-size: 14px; }
@@ -165,6 +177,12 @@
     </section>
 
     <section class="zonesCard">
+      <div class="zonesToggle">
+        <button id="zonesToggleBtn" class="btn" aria-expanded="false">
+          <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="zonesToggleText">Show all times</span>
+        </button>
+      </div>
       <div class="zones" id="zones"></div>
     </section>
 
@@ -209,9 +227,9 @@
       light: JSON.parse(localStorage.getItem('blt_light') ?? 'false')
     };
 
-    const fmtBtn = document.getElementById('fmtBtn');
-    const themeBtn = document.getElementById('themeBtn');
-    const zonesEl = document.getElementById('zones');
+  const fmtBtn = document.getElementById('fmtBtn');
+  const themeBtn = document.getElementById('themeBtn');
+  const zonesEl = document.getElementById('zones');
 
     function persist() {
       localStorage.setItem('blt_hour12', JSON.stringify(state.hour12));
@@ -257,6 +275,31 @@
     }
 
     function offsetForZone(date, timeZone) {
+      // Try a reliable parts-based approach: use formatToParts to get numeric local fields
+      try {
+        const parts = new Intl.DateTimeFormat('en-GB', {
+          timeZone,
+          year: 'numeric', month: 'numeric', day: 'numeric',
+          hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false
+        }).formatToParts(date);
+        const map = {};
+        parts.forEach(p => { if (p.type && p.type !== 'literal') map[p.type] = p.value; });
+        if (map.year) {
+          const y = Number(map.year), m = Number(map.month), d = Number(map.day);
+          const hh = Number(map.hour || 0), mm = Number(map.minute || 0), ss = Number(map.second || 0);
+          const zonedTs = Date.UTC(y, m - 1, d, hh, mm, ss);
+          const diffMin = Math.round((zonedTs - date.getTime()) / 60000);
+          const sign = diffMin >= 0 ? '+' : '-';
+          const abs = Math.abs(diffMin);
+          const hPart = String(Math.floor(abs / 60)).padStart(2, '0');
+          const mPart = String(abs % 60).padStart(2, '0');
+          return `UTC${sign}${hPart}:${mPart}`;
+        }
+      } catch (e) {
+        // fall through to fallback
+      }
+
+      // Fallback: try to compute by comparing locale-converted Date objects
       try {
         const utc = new Date(date.toLocaleString('en-CA', { timeZone: 'UTC', hour12: false }));
         const zoned = new Date(date.toLocaleString('en-CA', { timeZone, hour12: false }));
@@ -266,7 +309,9 @@
         const hh = String(Math.floor(abs / 60)).padStart(2, '0');
         const mm = String(abs % 60).padStart(2, '0');
         return `UTC${sign}${hh}:${mm}`;
-      } catch { return '—'; }
+      } catch (e) {
+        return '—';
+      }
     }
 
     function buildZones() {
@@ -311,6 +356,28 @@
     buildZones();
     tick();
     setInterval(tick, 1000);
+
+  // Collapse zones on small screens by default and wire toggle
+  const zonesToggleBtn = document.getElementById('zonesToggleBtn');
+    function updateZonesCollapsed() {
+      const isMobile = window.matchMedia('(max-width: 640px)').matches;
+      if (isMobile) {
+        zonesEl.classList.add('collapsed');
+        zonesToggleBtn.textContent = 'Show all times';
+        zonesToggleBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        zonesEl.classList.remove('collapsed');
+        zonesToggleBtn.style.display = 'none';
+      }
+    }
+    zonesToggleBtn.addEventListener('click', () => {
+      const isNowCollapsed = zonesEl.classList.toggle('collapsed');
+      zonesToggleBtn.setAttribute('aria-expanded', (!isNowCollapsed).toString());
+      const txt = zonesEl.classList.contains('collapsed') ? 'Show all times' : 'Show fewer';
+      zonesToggleBtn.querySelector('.zonesToggleText').textContent = txt;
+    });
+    window.addEventListener('resize', updateZonesCollapsed);
+    updateZonesCollapsed();
 
     // Benny overlay toggle with backdrop and close button
     const bennyOverlay = document.getElementById('bennyOverlay');
