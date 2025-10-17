@@ -1,4 +1,4 @@
-# Benny & Liam Time
+# Benny & Liam Time (BLT)
 
 **Benny & Liam Time** is a lighthearted web project built around an inside joke between two friends, Benny (from Melbourne) and Liam (from Brisbane). When daylight saving time begins, their clocks go out of sync — Melbourne moves an hour ahead while Brisbane stays put. To fix this, they decided to meet halfway, creating their own timezone: **Benny & Liam Time** — which by coincidence, perfectly matches **South Australian time (UTC+10:30)**.
 
