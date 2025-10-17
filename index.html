@@ -72,11 +72,9 @@
     .date { margin-top: 4px; font-size: 13px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
 
     /* ===== Zones (compact by default, expandable for details) ===== */
-    .zonesCard { border-radius: 18px; border: 1px solid rgba(255,255,255,0.10); background: var(--panel); padding: 14px; }
-    .zonesHeader { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+    .zonesCard { border-radius: 18px; border: 1px solid rgba(255,255,255,0.10); background: var(--panel); padding: 14px; overflow: hidden; }
     .zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
-    .zoneItem { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--panel-2); border: 1px solid rgba(255,255,255,0.08); transition: transform 120ms ease, box-shadow 120ms ease, padding 120ms;
-    }
+    .zoneItem { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--panel-2); border: 1px solid rgba(255,255,255,0.08); transition: transform 120ms ease, box-shadow 120ms ease, padding 120ms; overflow: hidden; }
     .zoneItem:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
     .zoneName { color: var(--muted); font-size: 12px; }
     .zoneTime { font-variant-numeric: tabular-nums; font-weight: 800; }
@@ -106,6 +104,7 @@
       <div class="controls">
         <button class="btn" id="fmtBtn" aria-pressed="false" title="Toggle 12/24‑hour">24‑hour</button>
         <button class="btn" id="themeBtn" aria-pressed="false" title="Toggle light/dark">Dark</button>
+        <!-- Keep this button fixed here so it never moves -->
         <button class="btn" id="toggleDetails" aria-pressed="false" title="Expand zone details">Expand details</button>
       </div>
     </header>
@@ -125,17 +124,14 @@
     </section>
 
     <section class="zonesCard">
-      <div class="zonesHeader">
-        <div class="label">Quick glances — Aussie zones</div>
-        <div class="label" id="zonesHint">Compact view: city & time. Use “Expand details” for abbreviations & offsets.</div>
-      </div>
+      <!-- Removed headers/extra explanatory text per request -->
       <div class="zones" id="zones"></div>
     </section>
 
     <section class="explain">
       <div class="label" style="text-align:left;">About this website</div>
       <p>
-        <strong>Benny & Liam Time (BLT)</strong> is the playful halfway point between Melbourne and Brisbane during daylight saving. Rather than arguing whose clock to follow, the compromise is right in the middle — which matches South Australia’s offset. On this site, we nickname that midpoint <em>Australia/BLT</em>. Hover over BLT labels to see the real zone and abbreviation.
+        <strong>Benny & Liam Time (BLT)</strong> is a playful midpoint between Melbourne and Brisbane during daylight saving — it matches South Australia’s offset. This site highlights BLT at the top and shows quick references for other Australian time zones below.
       </p>
     </section>
 
@@ -209,8 +205,6 @@
       el.addEventListener('blur', () => { el.textContent = base; });
     }
 
-    document.querySelectorAll('.hoverSwap').forEach(setupHoverSwap);
-
     // ===== Builders =====
     function formatTime(date, timeZone, hour12) {
       const timeFmt = new Intl.DateTimeFormat(undefined, {
@@ -259,7 +253,11 @@
               <span class=\"chip\">${z.tz}</span>
             </div>
           </div>
-          <div class=\"zoneTime\" data-time>00:00:00</div>
+          <div>
+            <div class=\"zoneTime\" data-time>00:00:00</div>
+            <!-- Always show the identifier even in compact -->
+            <div class=\"zoneIdSmall\"><span class=\"chip\">${z.tz}</span></div>
+          </div>
         `;
         zonesEl.appendChild(item);
         z._el = item;
@@ -293,6 +291,7 @@
     // ===== Init =====
     applyTheme();
     applyFormat();
+    document.querySelectorAll('.hoverSwap').forEach(setupHoverSwap);
     buildZones();
     applyExpanded();
     tick();
