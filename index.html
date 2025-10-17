@@ -7,7 +7,6 @@
   <meta name="description" content="Playful single‑page clock for Benny & Liam Time (midpoint between Melbourne & Brisbane during DST, i.e. South Australian time) with Aussie zone glances, theme and 12/24h toggles." />
   <meta name="color-scheme" content="light dark" />
   <style>
-    /* ===== Theme tokens ===== */
     :root {
       --bg: #0b0b12;
       --panel: #13131e;
@@ -15,9 +14,8 @@
       --text: #f7f8fc;
       --muted: #a6aec2;
       --ring: rgba(125, 211, 252, 0.35);
-      --accent: #7dd3fc; /* sky-300 */
-      --accent-2: #f0abfc; /* fuchsia-300 */
-      --ok: #86efac; /* green-300 */
+      --accent: #7dd3fc;
+      --accent-2: #f0abfc;
       --shadow: 0 10px 30px rgba(0,0,0,0.35);
     }
     :root.light {
@@ -27,9 +25,8 @@
       --text: #0b1020;
       --muted: #5b6271;
       --ring: rgba(2, 132, 199, 0.18);
-      --accent: #0284c7; /* sky-600 */
-      --accent-2: #a21caf; /* fuchsia-700 */
-      --ok: #16a34a; /* green-600 */
+      --accent: #0284c7;
+      --accent-2: #a21caf;
       --shadow: 0 10px 24px rgba(2, 8, 23, 0.08);
     }
 
@@ -56,7 +53,6 @@
     .btn { padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.14); background: var(--panel); color: var(--text); cursor: pointer; font-weight: 600; font-size: 13px; box-shadow: var(--shadow); }
     .btn:hover { border-color: var(--ring); }
 
-    /* ===== Hero clock (center focus) ===== */
     .hero { display: grid; gap: 14px; margin-top: 8px; }
     .heroCard {
       border-radius: 24px; border: 1px solid rgba(255,255,255,0.10);
@@ -71,7 +67,6 @@
     .chip { font-size: 12px; padding: 6px 10px; border-radius: 999px; border: 1px dashed rgba(255,255,255,0.16); color: var(--muted); background: var(--panel-2); }
     .date { margin-top: 4px; font-size: 13px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
 
-    /* ===== Zones (compact fixed layout) ===== */
     .zonesCard { border-radius: 18px; border: 1px solid rgba(255,255,255,0.10); background: var(--panel); padding: 14px; overflow: hidden; }
     .zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
     .zoneItem { display: grid; grid-template-rows: auto auto auto; gap: 6px; padding: 12px 14px; border-radius: 12px; background: var(--panel-2); border: 1px solid rgba(255,255,255,0.08); transition: transform 120ms ease, box-shadow 120ms ease; }
@@ -82,22 +77,13 @@
     .zoneTime { font-weight: 800; }
     .zoneLine3 { color: var(--muted); font-size: 12px; font-weight: 700; }
 
-    /* Footer */
     footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 6px; }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
 
-    /* Explanation section */
     .explain { border-radius: 14px; border: 1px solid rgba(255,255,255,0.10); background: var(--panel); padding: 14px; color: var(--muted); font-size: 14px; }
-      /* Benny GIF should not capture pointer to avoid flicker */
-    h1 span.benny:hover::after,
-    .benny:hover::after {
-      content: url('https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa3Ryc3E2bGI0eDkyZXZnbmVrYXJsMnhxanJpcW50NjJwZjg2OW9mcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7BDX9W6XPx6Q8/giphy.gif');
-      position: absolute;
-      top: 1.9em; left: 50%; transform: translateX(-50%);
-      max-width: 160px; height: auto; z-index: 1000; pointer-events: none;
-      filter: drop-shadow(0 6px 16px rgba(0,0,0,0.35));
-    }
+
+    /* BENNY hover GIF */
+    .benny { position: relative; }
+    .benny:hover::after { content: url('https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa3Ryc3E2bGI0eDkyZXZnbmVrYXJsMnhxanJpcW50NjJwZjg2OW9mcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7BDX9W6XPx6Q8/giphy.gif'); position: absolute; top: 1.9em; left: 50%; transform: translateX(-50%); max-width: 160px; height: auto; z-index: 1000; pointer-events: none; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.35)); }
   </style>
 </head>
 <body>
@@ -105,7 +91,7 @@
     <header>
       <div class="brand">
         <div class="logo" aria-hidden="true"></div>
-        <h1>Benny & Liam Time</h1>
+        <h1><span class="benny">Benny</span> & Liam Time</h1>
       </div>
       <div class="controls">
         <button class="btn" id="fmtBtn" aria-pressed="false" title="Toggle 12/24‑hour">24‑hour</button>
@@ -167,7 +153,7 @@
       localStorage.setItem('blt_light', JSON.stringify(state.light));
     }
 
-    // ===== DOM =====
+    // ===== DOM helpers =====
     const fmtBtn = document.getElementById('fmtBtn');
     const themeBtn = document.getElementById('themeBtn');
     const zonesEl = document.getElementById('zones');
@@ -185,7 +171,6 @@
     themeBtn.addEventListener('click', () => { state.light = !state.light; applyTheme(); persist(); });
     fmtBtn.addEventListener('click', () => { state.hour12 = !state.hour12; applyFormat(); tick(); persist(); });
 
-    // Hover swap for BLT labels
     function setupHoverSwap(el) {
       const base = el.getAttribute('data-base');
       const hover = el.getAttribute('data-hover');
@@ -195,7 +180,6 @@
       el.addEventListener('blur', () => { el.textContent = base; });
     }
 
-    // Builders
     function formatTime(date, timeZone, hour12) {
       const timeFmt = new Intl.DateTimeFormat(undefined, {
         hour: '2-digit', minute: '2-digit', second: '2-digit', hour12, timeZone,
@@ -205,16 +189,27 @@
       });
       return { time: timeFmt.format(date), date: dateFmt.format(date) };
     }
-    function tzMeta(date, timeZone) {
-      let short = '';
+
+    function tzAbbrev(date, timeZone) {
       try {
         const abbrFmt = new Intl.DateTimeFormat(undefined, { timeZone, timeZoneName: 'short' });
         const parts = abbrFmt.formatToParts(date);
         const zonePart = parts.find(p => p.type === 'timeZoneName');
-        if (zonePart) short = zonePart.value; // AEST/AEDT/ACST/ACDT/UTC
-      } catch {}
+        return zonePart ? zonePart.value : '';
+      } catch { return ''; }
+    }
 
-      return { short };
+    function offsetForZone(date, timeZone) {
+      try {
+        const utc = new Date(date.toLocaleString('en-CA', { timeZone: 'UTC', hour12: false }));
+        const zoned = new Date(date.toLocaleString('en-CA', { timeZone, hour12: false }));
+        const diffMin = Math.round((zoned - utc) / 60000);
+        const sign = diffMin >= 0 ? '+' : '-';
+        const abs = Math.abs(diffMin);
+        const hh = String(Math.floor(abs / 60)).padStart(2, '0');
+        const mm = String(abs % 60).padStart(2, '0');
+        return `UTC${sign}${hh}:${mm}`;
+      } catch { return '—'; }
     }
 
     function buildZones() {
@@ -223,59 +218,39 @@
         const item = document.createElement('div');
         item.className = 'zoneItem';
         item.innerHTML = `
-          <div class=\"zoneLine1\">${z.label}</div>
-          <div class=\"zoneLine2\">
-            <span class=\"zoneId\">${z.tz}</span>
-            <span class=\"zoneTime\" data-time>00:00:00</span>
+          <div class="zoneLine1">${z.label}</div>
+          <div class="zoneLine2">
+            <span class="zoneId">${z.tz}</span>
+            <span class="zoneTime" data-time>00:00:00</span>
           </div>
-          <div class=\"zoneLine3\" data-abbrev>AEDT</div>
+          <div class="zoneLine3" data-abbrev>AEDT</div>
         `;
         zonesEl.appendChild(item);
         z._el = item;
       });
     }
 
-    // Tick loop
     function tick() {
       const now = new Date();
       // BLT hero
       const bltFmt = formatTime(now, BLT_TZ, state.hour12);
-      const bltMeta = tzMeta(now, BLT_TZ);
+      const bltAbbr = tzAbbrev(now, BLT_TZ);
       document.getElementById('bltTime').textContent = bltFmt.time;
       document.getElementById('bltDate').textContent = bltFmt.date;
-      const ab = document.getElementById('bltAbbrev');
-      ab.setAttribute('data-hover', bltMeta.short || 'ACDT');
-      // keep offset chip accurate
-      try {
-        const utc = new Date(now.toLocaleString('en-CA', { timeZone: 'UTC', hour12: false }));
-        const zoned = new Date(now.toLocaleString('en-CA', { timeZone: BLT_TZ, hour12: false }));
-        const diffMin = Math.round((zoned - utc) / 60000);
-        const sign = diffMin >= 0 ? '+' : '-';
-        const abs = Math.abs(diffMin);
-        const hh = String(Math.floor(abs / 60)).padStart(2, '0');
-        const mm = String(abs % 60)).padStart(2, '0');
-        document.getElementById('bltOffset').textContent = `UTC${sign}${hh}:${mm}`;
-      } catch {}
+      document.getElementById('bltAbbrev').setAttribute('data-hover', bltAbbr || 'ACDT');
+      document.getElementById('bltOffset').textContent = offsetForZone(now, BLT_TZ);
 
       // Zones
       ZONES.forEach(z => {
         const { time, date } = formatTime(now, z.tz, state.hour12);
-        const meta = tzMeta(now, z.tz);
+        const ab = tzAbbrev(now, z.tz);
         z._el.querySelector('[data-time]').textContent = time;
-        z._el.querySelector('[data-abbrev]').textContent = meta.short || '';
-        z._el.title = date; // hover to see the date
+        z._el.querySelector('[data-abbrev]').textContent = ab || '';
+        z._el.title = date;
       });
     }
 
-    // Init
-    applyTheme();
-    applyFormat();
-    document.querySelectorAll('.hoverSwap').forEach(setupHoverSwap);
-    buildZones();
-    tick();
-    setInterval(tick, 1000);
-      // Auto-wrap every occurrence of the word "Benny" on the page (case-insensitive)
-    // so the hover GIF works anywhere. Skips SCRIPT/STYLE/NOSCRIPT tags.
+    // Wrap every "Benny" word so the GIF hover works everywhere
     (function wrapAllBenny(root){
       const re = /(benny)/gi;
       const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
@@ -292,7 +267,6 @@
           if (part && part.match(/^benny$/i)) {
             const span = document.createElement('span');
             span.className = 'benny';
-            span.style.position = 'relative';
             span.textContent = part;
             frag.appendChild(span);
           } else if (part) {
@@ -302,6 +276,14 @@
         parent.replaceChild(frag, node);
       });
     })(document.body);
+
+    // Init
+    applyTheme();
+    applyFormat();
+    document.querySelectorAll('.hoverSwap').forEach(setupHoverSwap);
+    buildZones();
+    tick();
+    setInterval(tick, 1000);
   </script>
 </body>
 </html>
