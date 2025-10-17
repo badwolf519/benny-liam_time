@@ -1,12 +1,12 @@
 # Benny & Liam Time (BLT)
 
-**Benny & Liam Time** is a lighthearted web project built around an inside joke between two friends, Benny (from Melbourne) and Liam (from Brisbane). When daylight saving time begins, their clocks go out of sync — Melbourne moves an hour ahead while Brisbane stays put. To fix this, they decided to meet halfway, creating their own timezone: **Benny & Liam Time** — which by coincidence, perfectly matches **South Australian time (UTC+10:30)**.
+**Benny & Liam Time (BLT)** is a lighthearted web project built around an inside joke between two friends, Benny (from Melbourne) and Liam (from Brisbane). When daylight saving time begins, their clocks go out of sync — Melbourne moves an hour ahead while Brisbane stays put. To fix this, they decided to meet halfway, creating their own timezone: **Benny & Liam Time (BLT)** — which by coincidence, perfectly matches **South Australian time (UTC+10:30)**.
 
 ---
 
 ## 🕒 Concept
 
-The site displays **Benny & Liam Time** as the central reference point and compares it to all major Australian time zones. It updates live every second, automatically adjusting for daylight saving transitions using the browser’s built-in `Intl.DateTimeFormat` API.
+The site displays **Benny & Liam Time (BLT)** as the central reference point and compares it to all major Australian time zones. It updates live every second, automatically adjusting for daylight saving transitions using the browser’s built-in `Intl.DateTimeFormat` API.
 
 The goal of the project is to visualise this in-between timezone idea in a polished, functional way.
 ---

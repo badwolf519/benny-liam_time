@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Benny & Liam Time</title>
-  <meta name="description" content="Playful single-page clock for Benny & Liam Time (midpoint between Melbourne & Brisbane during DST, i.e. South Australian time) with Aussie zone glances, theme and 12/24h toggles." />
+  <title>Benny & Liam Time (BLT)</title>
+  <meta name="description" content="Playful single-page clock for Benny & Liam Time (BLT) — midpoint between Melbourne & Brisbane during DST (South Australian time). Includes Aussie zone glances, theme and 12/24h toggles." />
   <meta name="color-scheme" content="light dark" />
   <style>
     :root {
@@ -46,7 +46,7 @@
 
     header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .brand { display: flex; align-items: center; gap: 10px; }
-    .logo { width: 32px; height: 32px; border-radius: 10px; background: conic-gradient(from 30deg, var(--accent), var(--accent-2)); box-shadow: var(--shadow); }
+  .logo { width: 36px; height: 36px; border-radius: 10px; background: none; box-shadow: var(--shadow); display:flex; align-items:center; justify-content:center; }
     h1 { font-size: clamp(22px, 3.4vw, 28px); margin: 0; letter-spacing: 0.2px; }
 
     .controls { display: flex; gap: 8px; align-items: center; }
@@ -68,26 +68,82 @@
     .date { margin-top: 4px; font-size: 13px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
 
     .zonesCard { border-radius: 18px; border: 1px solid rgba(255,255,255,0.10); background: var(--panel); padding: 14px; overflow: hidden; }
-    .zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
-    .zoneItem { display: grid; grid-template-rows: auto auto auto; gap: 6px; padding: 12px 14px; border-radius: 12px; background: var(--panel-2); border: 1px solid rgba(255,255,255,0.08); transition: transform 120ms ease, box-shadow 120ms ease; }
-    .zoneItem:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
-    .zoneLine1 { font-weight: 700; }
-    .zoneLine2 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; }
-    .zoneId { color: var(--muted); font-size: 12px; }
-    .zoneTime { font-weight: 800; }
-    .zoneLine3 { color: var(--muted); font-size: 12px; font-weight: 700; }
+  .zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+  .zoneItem { display: grid; grid-template-rows: auto auto auto; gap: 4px; padding: 8px 10px; border-radius: 10px; background: var(--panel-2); border: 1px solid rgba(255,255,255,0.08); transition: transform 120ms ease, box-shadow 120ms ease; }
+  .zoneItem:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+  .zoneLine1 { font-weight: 700; font-size: 13px; }
+  .zoneLine2 { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; font-variant-numeric: tabular-nums; }
+  .zoneId { color: var(--muted); font-size: 12px; }
+  .zoneTime { font-weight: 800; }
+  .zoneLine3 { color: var(--muted); font-size: 11px; font-weight: 700; }
 
-    footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 6px; }
+  footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 6px; margin-bottom: 36px; }
 
     .explain { border-radius: 14px; border: 1px solid rgba(255,255,255,0.10); background: var(--panel); padding: 14px; color: var(--muted); font-size: 14px; }
+    /* Benny GIF overlay - centered in middle of viewport */
+    .benny-overlay {
+      position: fixed;
+      left: 0; top: 0; right: 0; bottom: 0;
+      display: none; /* toggled via JS or active class */
+      align-items: center;
+      justify-content: center;
+      z-index: 1200;
+    }
+    .benny-overlay.active { display: flex; }
+    /* Backdrop that dims the page and receives taps/clicks */
+    .benny-backdrop {
+      position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(2,6,23,0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border-radius: 0;
+    }
+    .benny-card {
+      position: relative;
+      max-width: 92vw;
+      max-height: 86vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border-radius: 12px;
+      padding: 6px;
+      z-index: 1210; /* above backdrop */
+    }
+    .benny-close {
+      position: absolute;
+      right: 6px; top: 6px;
+      background: rgba(0,0,0,0.45);
+      border: 0; color: white; width: 36px; height: 36px; border-radius: 999px;
+      display: inline-flex; align-items: center; justify-content: center; font-weight: 700;
+      cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+    }
+    .benny-close:focus { outline: 2px solid var(--accent); }
+    .benny-card img {
+      width: auto;
+      height: auto;
+      max-width: 86vw;
+      max-height: 80vh;
+      display: block;
+      border-radius: 8px;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.6);
+    }
+  .benny-trigger { text-decoration: none; cursor: pointer; color: inherit; touch-action: manipulation; }
+  .benny-trigger:hover, .benny-trigger:focus { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <h1>Benny & Liam Time</h1>
+        <div class="logo" aria-hidden="true">
+          <!-- Clock icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.9" />
+            <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <h1>Benny &amp; Liam Time (BLT)</h1>
       </div>
       <div class="controls">
         <button class="btn" id="fmtBtn" aria-pressed="false" title="Toggle 12/24-hour">24-hour</button>
@@ -97,7 +153,7 @@
 
     <section class="hero">
       <div class="heroCard">
-        <div class="label">Benny & Liam Time</div>
+  <div class="label">Benny &amp; Liam Time (BLT)</div>
         <div class="big" id="bltTime">00:00:00</div>
         <div class="subRow">
           <span class="chip hoverSwap" id="bltZone" data-base="Australia/BLT" data-hover="Australia/Adelaide">Australia/BLT</span>
@@ -122,6 +178,16 @@
     <footer>
       Made in Tasmania 🇦🇺 — Times use the browser’s <code>Intl</code> API (IANA time zones).
     </footer>
+  </div>
+
+  <!-- Benny GIF overlay (centered) -->
+  <div id="bennyOverlay" class="benny-overlay" aria-hidden="true">
+    <div class="benny-backdrop" id="bennyBackdrop" tabindex="0" aria-hidden="true"></div>
+    <div class="benny-card" role="dialog" aria-modal="true" aria-label="Benny GIF">
+  <button class="benny-close" id="bennyClose" aria-label="Close Benny">✕</button>
+  <!-- GIF sourced from Giphy per request -->
+  <img id="bennyImg" src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa3Ryc3E2bGI0eDkyZXZnbmVrYXJsMnhxanJpcW50NjJwZjg2OW9mcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7BDX9W6XPx6Q8/giphy.gif" alt="Benny GIF" />
+    </div>
   </div>
 
   <script>
@@ -245,6 +311,80 @@
     buildZones();
     tick();
     setInterval(tick, 1000);
+
+    // Benny overlay toggle with backdrop and close button
+    const bennyOverlay = document.getElementById('bennyOverlay');
+    const bennyImg = document.getElementById('bennyImg');
+    const bennyBackdrop = document.getElementById('bennyBackdrop');
+    const bennyClose = document.getElementById('bennyClose');
+    let lastFocused = null;
+
+    function showBenny() {
+      lastFocused = document.activeElement;
+      bennyOverlay.classList.add('active');
+      bennyOverlay.setAttribute('aria-hidden', 'false');
+      // Focus the close button for keyboard users
+      bennyClose.focus();
+    }
+
+    function hideBenny() {
+      bennyOverlay.classList.remove('active');
+      bennyOverlay.setAttribute('aria-hidden', 'true');
+      // Return focus to triggering control if possible
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+    }
+
+    // Backdrop and close button both close overlay (tap/click friendly)
+    bennyBackdrop.addEventListener('click', hideBenny);
+    bennyClose.addEventListener('click', hideBenny);
+
+    // Close overlay on ESC
+    document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') hideBenny(); });
+
+    // Find all text occurrences of "Benny" inside the main wrapper and replace them with triggers
+    function wrapBennyOccurrences(root) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+      const textNodes = [];
+      while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+      textNodes.forEach(node => {
+        const val = node.nodeValue;
+        if (!val || val.indexOf('Benny') === -1) return;
+        const frag = document.createDocumentFragment();
+        let start = 0;
+        while (true) {
+          const i = val.indexOf('Benny', start);
+          if (i === -1) { frag.appendChild(document.createTextNode(val.slice(start))); break; }
+          if (i > start) frag.appendChild(document.createTextNode(val.slice(start, i)));
+          const span = document.createElement('span');
+          span.className = 'benny-trigger';
+          span.textContent = 'Benny';
+          span.style.cursor = 'pointer';
+          frag.appendChild(span);
+          start = i + 5;
+        }
+        node.parentNode.replaceChild(frag, node);
+      });
+    }
+
+    wrapBennyOccurrences(document.querySelector('.wrap'));
+
+    // Attach handlers to triggers
+    const triggers = Array.from(document.querySelectorAll('.benny-trigger'));
+    let hoverTimeout = null;
+    function cancelHide() { if (hoverTimeout) { clearTimeout(hoverTimeout); hoverTimeout = null; } }
+    function scheduleHide(delay = 250) { cancelHide(); hoverTimeout = setTimeout(() => { hideBenny(); hoverTimeout = null; }, delay); }
+
+    triggers.forEach(t => {
+      t.addEventListener('mouseenter', () => { cancelHide(); showBenny(); });
+      t.addEventListener('mouseleave', () => { scheduleHide(); });
+      t.addEventListener('click', (ev) => { ev.preventDefault(); cancelHide(); showBenny(); });
+      t.addEventListener('touchstart', (ev) => { ev.preventDefault(); cancelHide(); showBenny(); }, { passive: false });
+    });
+
+    // Keep overlay open while hovering overlay itself
+    bennyOverlay.addEventListener('mouseenter', () => { cancelHide(); });
+    bennyOverlay.addEventListener('mouseleave', () => { scheduleHide(); });
   </script>
 </body>
 </html>
