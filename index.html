@@ -89,6 +89,15 @@
 
     /* Explanation section */
     .explain { border-radius: 14px; border: 1px solid rgba(255,255,255,0.10); background: var(--panel); padding: 14px; color: var(--muted); font-size: 14px; }
+      /* Benny GIF should not capture pointer to avoid flicker */
+    h1 span.benny:hover::after,
+    .benny:hover::after {
+      content: url('https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa3Ryc3E2bGI0eDkyZXZnbmVrYXJsMnhxanJpcW50NjJwZjg2OW9mcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7BDX9W6XPx6Q8/giphy.gif');
+      position: absolute;
+      top: 1.9em; left: 50%; transform: translateX(-50%);
+      max-width: 160px; height: auto; z-index: 1000; pointer-events: none;
+      filter: drop-shadow(0 6px 16px rgba(0,0,0,0.35));
+    }
   </style>
 </head>
 <body>
@@ -265,6 +274,34 @@
     buildZones();
     tick();
     setInterval(tick, 1000);
+      // Auto-wrap every occurrence of the word "Benny" on the page (case-insensitive)
+    // so the hover GIF works anywhere. Skips SCRIPT/STYLE/NOSCRIPT tags.
+    (function wrapAllBenny(root){
+      const re = /(benny)/gi;
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode(node){ return re.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP; }
+      });
+      const toProcess = [];
+      while (walker.nextNode()) toProcess.push(walker.currentNode);
+      toProcess.forEach(node => {
+        const parent = node.parentNode;
+        if (!parent || /^(SCRIPT|STYLE|NOSCRIPT)$/i.test(parent.tagName)) return;
+        const parts = node.nodeValue.split(re);
+        const frag = document.createDocumentFragment();
+        parts.forEach(part => {
+          if (part && part.match(/^benny$/i)) {
+            const span = document.createElement('span');
+            span.className = 'benny';
+            span.style.position = 'relative';
+            span.textContent = part;
+            frag.appendChild(span);
+          } else if (part) {
+            frag.appendChild(document.createTextNode(part));
+          }
+        });
+        parent.replaceChild(frag, node);
+      });
+    })(document.body);
   </script>
 </body>
 </html>
