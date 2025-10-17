@@ -4,146 +4,195 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Benny & Liam Time</title>
-  <meta name="description" content="A playful clock that shows 'Benny & Liam Time' (the midpoint between Melbourne & Brisbane during DST, a.k.a. South Australian time) plus all major Australian time zones." />
+  <meta name="description" content="Playful single‑page clock for Benny & Liam Time (midpoint between Melbourne & Brisbane during DST, i.e. South Australian time) with compact Aussie zone glances, theme and 12/24h toggles." />
   <meta name="color-scheme" content="light dark" />
   <style>
+    /* ===== Theme tokens ===== */
     :root {
       --bg: #0b0b12;
       --panel: #13131e;
-      --text: #f6f7fb;
-      --muted: #9aa1b3;
+      --panel-2: #181826;
+      --text: #f7f8fc;
+      --muted: #a6aec2;
+      --ring: rgba(125, 211, 252, 0.35);
       --accent: #7dd3fc; /* sky-300 */
       --accent-2: #f0abfc; /* fuchsia-300 */
-      --ring: rgba(125, 211, 252, 0.35);
+      --ok: #86efac; /* green-300 */
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
     }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg: #f7fafc;
-        --panel: #ffffff;
-        --text: #0b1020;
-        --muted: #5b6271;
-        --accent: #0284c7; /* sky-600 */
-        --accent-2: #a21caf; /* fuchsia-700 */
-        --ring: rgba(2, 132, 199, 0.18);
-      }
+    :root.light {
+      --bg: #f7fafc;
+      --panel: #ffffff;
+      --panel-2: #eef2f8;
+      --text: #0b1020;
+      --muted: #5b6271;
+      --ring: rgba(2, 132, 199, 0.18);
+      --accent: #0284c7; /* sky-600 */
+      --accent-2: #a21caf; /* fuchsia-700 */
+      --ok: #16a34a; /* green-600 */
+      --shadow: 0 10px 24px rgba(2, 8, 23, 0.08);
     }
+
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body {
       margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      background: radial-gradient(1200px 800px at 80% -20%, rgba(125,211,252,0.15), transparent 60%),
-                  radial-gradient(1000px 700px at -10% 30%, rgba(240,171,252,0.15), transparent 60%), var(--bg);
+      background:
+        radial-gradient(900px 650px at 80% -20%, rgba(125,211,252,0.16), transparent 60%),
+        radial-gradient(900px 700px at -10% 30%, rgba(240,171,252,0.13), transparent 60%),
+        var(--bg);
       color: var(--text);
+      display: grid; place-items: center; padding: 32px 16px; min-height: 100dvh;
     }
-    header { max-width: 1100px; margin: 24px auto 0; padding: 0 16px; }
-    .title {
-      display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+
+    .wrap { width: 100%; max-width: 820px; display: grid; gap: 16px; }
+
+    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo { width: 32px; height: 32px; border-radius: 10px; background: conic-gradient(from 30deg, var(--accent), var(--accent-2)); box-shadow: var(--shadow); }
+    h1 { font-size: clamp(22px, 3.4vw, 28px); margin: 0; letter-spacing: 0.2px; }
+
+    .controls { display: flex; gap: 8px; align-items: center; }
+    .btn { padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.14); background: var(--panel); color: var(--text); cursor: pointer; font-weight: 600; font-size: 13px; box-shadow: var(--shadow); }
+    .btn:hover { border-color: var(--ring); }
+
+    /* ===== Hero clock (center focus) ===== */
+    .hero { display: grid; gap: 14px; margin-top: 8px; }
+    .heroCard {
+      border-radius: 24px; border: 1px solid rgba(255,255,255,0.10);
+      background:
+        linear-gradient(180deg, rgba(2,132,199,0.16), rgba(0,0,0,0.02)),
+        var(--panel);
+      padding: 26px 22px; box-shadow: var(--shadow);
     }
-    .title h1 { font-size: clamp(28px, 4vw, 40px); margin: 0; letter-spacing: 0.2px; }
-    .pill { padding: 6px 10px; border: 1px solid var(--ring); border-radius: 999px; font-size: 12px; color: var(--muted); }
-    .desc { margin-top: 10px; color: var(--muted); max-width: 70ch; }
+    .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; }
+    .big { font-variant-numeric: tabular-nums; font-size: clamp(52px, 9vw, 92px); font-weight: 800; line-height: 1.03; text-align: center; }
+    .subRow { display: flex; gap: 10px; align-items: center; justify-content: center; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
+    .chip { font-size: 12px; padding: 6px 10px; border-radius: 999px; border: 1px dashed rgba(255,255,255,0.16); color: var(--muted); background: var(--panel-2); }
+    .date { margin-top: 4px; font-size: 13px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
 
-    main { max-width: 1100px; margin: 24px auto; padding: 0 16px 40px; }
+    /* ===== Compact zone glances ===== */
+    .zonesCard { border-radius: 18px; border: 1px solid rgba(255,255,255,0.10); background: var(--panel); padding: 14px; }
+    .zonesHeader { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+    .zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+    .zoneItem { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--panel-2); border: 1px solid rgba(255,255,255,0.08); }
+    .zoneName { color: var(--muted); font-size: 12px; }
+    .zoneTime { font-variant-numeric: tabular-nums; font-weight: 700; }
+    .zoneMeta { display: flex; gap: 6px; align-items: center; }
+    .hideable { display: none; }
 
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-
-    .card {
-      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-      background-color: var(--panel);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 18px; padding: 16px; position: relative; overflow: hidden;
-    }
-    .card:focus-within { outline: 2px solid var(--ring); }
-
-    .badge { font-size: 12px; color: var(--muted); }
-    .zone { font-weight: 700; letter-spacing: 0.2px; }
-    .clock {
-      display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 6px;
-    }
-    .time { font-variant-numeric: tabular-nums; font-size: 28px; font-weight: 700; }
-    .sec { font-variant-numeric: tabular-nums; font-size: 16px; color: var(--muted); }
-    .date { margin-top: 6px; font-size: 13px; color: var(--muted); }
-
-    .hero {
-      display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px;
-    }
-    .hero .display { padding: 22px 20px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.08); background: linear-gradient(180deg, rgba(2,132,199,0.18), rgba(0,0,0,0.02)); }
-    .hero .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; }
-    .hero .big { font-variant-numeric: tabular-nums; font-size: clamp(44px, 8vw, 72px); font-weight: 800; line-height: 1.05; }
-    .hero .sub { display: flex; gap: 10px; align-items: center; color: var(--muted); margin-top: 6px; }
-
-    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
-    .chip { font-size: 12px; padding: 6px 10px; border-radius: 999px; border: 1px dashed rgba(255,255,255,0.14); color: var(--muted); }
-
-    .footer { margin-top: 28px; color: var(--muted); font-size: 13px; }
+    /* Footer */
+    footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 6px; }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
-
-    .accent { color: var(--accent-2); font-weight: 700; }
-
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
   </style>
 </head>
 <body>
-  <header>
-    <div class="title">
-      <h1>🕰️ Benny & Liam Time</h1>
-      <span class="pill">Halfway between Melbourne & Brisbane when VIC is on DST (i.e., South Australia time)</span>
-    </div>
-    <p class="desc">This site shows <span class="accent">Benny & Liam Time (BLT)</span> plus the current time in major Australian time zones. BLT is presented using the <b>Australia/Adelaide</b> time zone, which matches the midpoint when Melbourne observes daylight saving and Brisbane doesn’t. When both are on standard time, the midpoint equals AEST.</p>
-  </header>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <h1>Benny & Liam Time</h1>
+      </div>
+      <div class="controls">
+        <button class="btn" id="fmtBtn" aria-pressed="false" title="Toggle 12/24‑hour">24‑hour</button>
+        <button class="btn" id="themeBtn" aria-pressed="false" title="Toggle light/dark">Dark</button>
+      </div>
+    </header>
 
-  <main>
     <section class="hero">
-      <div class="display card">
+      <div class="heroCard">
         <div class="label">Benny & Liam Time</div>
-        <div class="big mono" id="blt-time">00:00:00</div>
-        <div class="sub">
-          <span>Zone: <span class="zone">Australia/Adelaide</span></span>
-          <span class="chip" id="blt-abbrev">ACDT</span>
-          <span class="chip" id="blt-offset">UTC+10:30</span>
+        <div class="big" id="bltTime">00:00:00</div>
+        <div class="subRow">
+          <span class="chip" id="bltZone">Australia/Adelaide</span>
+          <span class="chip" id="bltAbbrev">ACDT</span>
+          <span class="chip" id="bltOffset">UTC+10:30</span>
         </div>
-        <div class="date mono" id="blt-date">Friday, 1 Jan 1970</div>
+        <div class="date" id="bltDate">Friday, 1 Jan 1970</div>
       </div>
     </section>
 
-    <section>
-      <div class="grid" id="grid"></div>
-      <div class="footer">
-        <p>Times use the browser’s <code class="mono">Intl.DateTimeFormat</code> with official IANA time zones, so daylight saving transitions are handled for you.</p>
+    <section class="zonesCard">
+      <div class="zonesHeader">
+        <div class="label">Quick glances — Aussie zones</div>
+        <button class="btn" id="toggleList">Show all</button>
       </div>
+      <div class="zones" id="zones"></div>
     </section>
-  </main>
+
+    <footer>
+      BLT equals South Australian time when VIC observes DST and QLD does not. Times are computed using the browser’s <code>Intl</code> API (IANA time zones).
+    </footer>
+  </div>
 
   <script>
-    // --- Configuration of zones to display ---
+    // ===== Config =====
+    const BLT_TZ = 'Australia/Adelaide';
     const ZONES = [
-      { label: 'Melbourne', tz: 'Australia/Melbourne' },
-      { label: 'Brisbane', tz: 'Australia/Brisbane' },
-      { label: 'Sydney', tz: 'Australia/Sydney' },
-      { label: 'Adelaide', tz: 'Australia/Adelaide' },
-      { label: 'Perth', tz: 'Australia/Perth' },
-      { label: 'Hobart', tz: 'Australia/Hobart' },
-      { label: 'Darwin', tz: 'Australia/Darwin' },
+      { label: 'Melbourne (VIC)', tz: 'Australia/Melbourne' },
+      { label: 'Brisbane (QLD)', tz: 'Australia/Brisbane' },
+      { label: 'Sydney (NSW)', tz: 'Australia/Sydney' },
+      { label: 'Adelaide (SA)', tz: 'Australia/Adelaide' },
+      { label: 'Perth (WA)', tz: 'Australia/Perth' },
+      { label: 'Hobart (TAS)', tz: 'Australia/Hobart' },
+      { label: 'Darwin (NT)', tz: 'Australia/Darwin' },
       { label: 'Canberra (ACT)', tz: 'Australia/Sydney' },
-      { label: 'UTC', tz: 'UTC' }
+      { label: 'UTC', tz: 'UTC' },
     ];
 
-    // Helper: format time and date for a zone
-    function formatForZone(date, timeZone) {
+    // ===== State & persistence =====
+    const state = {
+      hour12: JSON.parse(localStorage.getItem('blt_hour12') ?? 'false'), // default 24h
+      light: JSON.parse(localStorage.getItem('blt_light') ?? 'false'),   // default dark
+      expanded: JSON.parse(localStorage.getItem('blt_expanded') ?? 'false'),
+    };
+
+    function persist() {
+      localStorage.setItem('blt_hour12', JSON.stringify(state.hour12));
+      localStorage.setItem('blt_light', JSON.stringify(state.light));
+      localStorage.setItem('blt_expanded', JSON.stringify(state.expanded));
+    }
+
+    // ===== DOM =====
+    const fmtBtn = document.getElementById('fmtBtn');
+    const themeBtn = document.getElementById('themeBtn');
+    const toggleListBtn = document.getElementById('toggleList');
+    const zonesEl = document.getElementById('zones');
+
+    function applyTheme() {
+      document.documentElement.classList.toggle('light', state.light);
+      themeBtn.textContent = state.light ? 'Light' : 'Dark';
+      themeBtn.setAttribute('aria-pressed', String(state.light));
+    }
+
+    function applyFormat() {
+      fmtBtn.textContent = state.hour12 ? '12‑hour' : '24‑hour';
+      fmtBtn.setAttribute('aria-pressed', String(state.hour12));
+    }
+
+    function applyExpanded() {
+      toggleListBtn.textContent = state.expanded ? 'Hide extra' : 'Show all';
+      document.querySelectorAll('.zoneItem.hideable').forEach(el => {
+        el.style.display = state.expanded ? 'grid' : 'none';
+      });
+    }
+
+    themeBtn.addEventListener('click', () => { state.light = !state.light; applyTheme(); persist(); });
+    fmtBtn.addEventListener('click', () => { state.hour12 = !state.hour12; applyFormat(); tick(); persist(); });
+    toggleListBtn.addEventListener('click', () => { state.expanded = !state.expanded; applyExpanded(); persist(); });
+
+    // ===== Builders =====
+    function formatTime(date, timeZone, hour12) {
       const timeFmt = new Intl.DateTimeFormat(undefined, {
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone,
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12, timeZone,
       });
       const dateFmt = new Intl.DateTimeFormat(undefined, {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone,
       });
-      return {
-        time: timeFmt.format(date),
-        date: dateFmt.format(date)
-      };
+      return { time: timeFmt.format(date), date: dateFmt.format(date) };
     }
 
-    // Helper: attempt to get short timezone name & numeric offset label
     function tzMeta(date, timeZone) {
       let short = '';
       try {
@@ -151,73 +200,73 @@
         const parts = abbrFmt.formatToParts(date);
         const zonePart = parts.find(p => p.type === 'timeZoneName');
         if (zonePart) short = zonePart.value; // e.g., AEST, AEDT, ACST, ACDT, UTC
-      } catch (e) {}
+      } catch {}
 
       let offset = '';
       try {
-        // Compute numeric offset by formatting the zone in ISO and comparing to UTC
         const utc = new Date(date.toLocaleString('en-CA', { timeZone: 'UTC', hour12: false }));
         const zoned = new Date(date.toLocaleString('en-CA', { timeZone, hour12: false }));
-        // Difference in minutes between zoned and UTC
         const diffMin = Math.round((zoned - utc) / 60000);
         const sign = diffMin >= 0 ? '+' : '-';
         const abs = Math.abs(diffMin);
         const hh = String(Math.floor(abs / 60)).padStart(2, '0');
         const mm = String(abs % 60).padStart(2, '0');
         offset = `UTC${sign}${hh}:${mm}`;
-      } catch (e) {}
-
+      } catch {}
       return { short, offset };
     }
 
-    // Build the grid cards
-    const gridEl = document.getElementById('grid');
-    const cardEls = [];
-    ZONES.forEach(({ label, tz }) => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <div class="badge">${label}</div>
-        <div class="clock">
-          <div class="time mono" data-time></div>
-          <div class="sec mono" data-abbrev></div>
-        </div>
-        <div class="row">
-          <span class="chip mono" data-offset></span>
-          <span class="chip mono">${tz}</span>
-        </div>
-        <div class="date mono" data-date></div>
-      `;
-      gridEl.appendChild(card);
-      cardEls.push({ el: card, tz, label });
-    });
-
-    // Update loop
-    function tick() {
-      const now = new Date();
-
-      // Update BLT (Adelaide)
-      const bltFmt = formatForZone(now, 'Australia/Adelaide');
-      const bltMeta = tzMeta(now, 'Australia/Adelaide');
-      document.getElementById('blt-time').textContent = bltFmt.time;
-      document.getElementById('blt-date').textContent = bltFmt.date;
-      document.getElementById('blt-abbrev').textContent = bltMeta.short || '—';
-      document.getElementById('blt-offset').textContent = bltMeta.offset || '—';
-
-      // Update each zone card
-      for (const item of cardEls) {
-        const { time, date } = formatForZone(now, item.tz);
-        const meta = tzMeta(now, item.tz);
-        item.el.querySelector('[data-time]').textContent = time;
-        item.el.querySelector('[data-date]').textContent = date;
-        item.el.querySelector('[data-abbrev]').textContent = meta.short || '';
-        item.el.querySelector('[data-offset]').textContent = meta.offset || '';
-      }
+    function buildZones() {
+      zonesEl.innerHTML = '';
+      ZONES.forEach((z, i) => {
+        const item = document.createElement('div');
+        item.className = 'zoneItem' + (i > 3 ? ' hideable' : ''); // show first few, hide rest by default
+        item.innerHTML = `
+          <div>
+            <div class="zoneName">${z.label}</div>
+            <div class="zoneMeta">
+              <span class="chip" data-abbrev></span>
+              <span class="chip" data-offset></span>
+            </div>
+          </div>
+          <div class="zoneTime" data-time>00:00:00</div>
+        `;
+        zonesEl.appendChild(item);
+        z._el = item;
+      });
     }
 
-    // Smooth updater
+    // ===== Tick loop =====
+    function tick() {
+      const now = new Date();
+      // BLT
+      const bltFmt = formatTime(now, BLT_TZ, state.hour12);
+      const bltMeta = tzMeta(now, BLT_TZ);
+      document.getElementById('bltTime').textContent = bltFmt.time;
+      document.getElementById('bltDate').textContent = bltFmt.date;
+      document.getElementById('bltZone').textContent = BLT_TZ;
+      document.getElementById('bltAbbrev').textContent = bltMeta.short || '—';
+      document.getElementById('bltOffset').textContent = bltMeta.offset || '—';
+
+      // Zones
+      ZONES.forEach(z => {
+        const { time, date } = formatTime(now, z.tz, state.hour12);
+        const meta = tzMeta(now, z.tz);
+        z._el.querySelector('[data-time]').textContent = time;
+        z._el.querySelector('[data-abbrev]').textContent = meta.short || '';
+        z._el.querySelector('[data-offset]').textContent = meta.offset || '';
+        z._el.title = date; // hover to see the date
+      });
+    }
+
+    // ===== Init =====
+    applyTheme();
+    applyFormat();
+    buildZones();
+    applyExpanded();
     tick();
     setInterval(tick, 1000);
   </script>
 </body>
 </html>
+
