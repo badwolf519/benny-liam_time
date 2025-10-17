@@ -65,26 +65,35 @@
         var(--panel);
       padding: 26px 22px; box-shadow: var(--shadow);
     }
-    .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; }
+    .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; text-align:center; }
     .big { font-variant-numeric: tabular-nums; font-size: clamp(52px, 9vw, 92px); font-weight: 800; line-height: 1.03; text-align: center; }
     .subRow { display: flex; gap: 10px; align-items: center; justify-content: center; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
     .chip { font-size: 12px; padding: 6px 10px; border-radius: 999px; border: 1px dashed rgba(255,255,255,0.16); color: var(--muted); background: var(--panel-2); }
     .date { margin-top: 4px; font-size: 13px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
 
-    /* ===== Compact zone glances ===== */
+    /* ===== Zones (compact by default, expandable for details) ===== */
     .zonesCard { border-radius: 18px; border: 1px solid rgba(255,255,255,0.10); background: var(--panel); padding: 14px; }
     .zonesHeader { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
     .zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
-    .zoneItem { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--panel-2); border: 1px solid rgba(255,255,255,0.08); }
+    .zoneItem { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--panel-2); border: 1px solid rgba(255,255,255,0.08); transition: transform 120ms ease, box-shadow 120ms ease, padding 120ms;
+    }
+    .zoneItem:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
     .zoneName { color: var(--muted); font-size: 12px; }
-    .zoneTime { font-variant-numeric: tabular-nums; font-weight: 700; }
-    .zoneMeta { display: flex; gap: 6px; align-items: center; }
-    .hideable { display: none; }
+    .zoneTime { font-variant-numeric: tabular-nums; font-weight: 800; }
+    .zoneMeta { display: none; gap: 6px; align-items: center; margin-top: 6px; grid-column: 1 / -1; }
+
+    /* Expanded state shows meta and enlarges sizing */
+    .zones.expanded .zoneItem { padding: 14px 16px; }
+    .zones.expanded .zoneMeta { display: flex; }
+    .zones.expanded .zoneTime { font-size: 18px; }
 
     /* Footer */
     footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 6px; }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
+
+    /* Explanation section */
+    .explain { border-radius: 14px; border: 1px solid rgba(255,255,255,0.10); background: var(--panel); padding: 14px; color: var(--muted); font-size: 14px; }
   </style>
 </head>
 <body>
@@ -97,6 +106,7 @@
       <div class="controls">
         <button class="btn" id="fmtBtn" aria-pressed="false" title="Toggle 12/24‑hour">24‑hour</button>
         <button class="btn" id="themeBtn" aria-pressed="false" title="Toggle light/dark">Dark</button>
+        <button class="btn" id="toggleDetails" aria-pressed="false" title="Expand zone details">Expand details</button>
       </div>
     </header>
 
@@ -105,8 +115,9 @@
         <div class="label">Benny & Liam Time</div>
         <div class="big" id="bltTime">00:00:00</div>
         <div class="subRow">
-          <span class="chip" id="bltZone">Australia/Adelaide</span>
-          <span class="chip" id="bltAbbrev">ACDT</span>
+          <!-- Hover-to-reveal true zone name and abbrev -->
+          <span class="chip hoverSwap" id="bltZone" data-base="Australia/BLT" data-hover="Australia/Adelaide">Australia/BLT</span>
+          <span class="chip hoverSwap" id="bltAbbrev" data-base="BLT" data-hover="ACDT">BLT</span>
           <span class="chip" id="bltOffset">UTC+10:30</span>
         </div>
         <div class="date" id="bltDate">Friday, 1 Jan 1970</div>
@@ -116,19 +127,26 @@
     <section class="zonesCard">
       <div class="zonesHeader">
         <div class="label">Quick glances — Aussie zones</div>
-        <button class="btn" id="toggleList">Show all</button>
+        <div class="label" id="zonesHint">Compact view: city & time. Use “Expand details” for abbreviations & offsets.</div>
       </div>
       <div class="zones" id="zones"></div>
     </section>
 
+    <section class="explain">
+      <div class="label" style="text-align:left;">About this website</div>
+      <p>
+        <strong>Benny & Liam Time (BLT)</strong> is the playful halfway point between Melbourne and Brisbane during daylight saving. Rather than arguing whose clock to follow, the compromise is right in the middle — which matches South Australia’s offset. On this site, we nickname that midpoint <em>Australia/BLT</em>. Hover over BLT labels to see the real zone and abbreviation.
+      </p>
+    </section>
+
     <footer>
-      BLT equals South Australian time when VIC observes DST and QLD does not. Times are computed using the browser’s <code>Intl</code> API (IANA time zones).
+      Made in Tasmania 🇦🇺 — Times use the browser’s <code>Intl</code> API (IANA time zones).
     </footer>
   </div>
 
   <script>
     // ===== Config =====
-    const BLT_TZ = 'Australia/Adelaide';
+    const BLT_TZ = 'Australia/Adelaide'; // still the real zone for correctness
     const ZONES = [
       { label: 'Melbourne (VIC)', tz: 'Australia/Melbourne' },
       { label: 'Brisbane (QLD)', tz: 'Australia/Brisbane' },
@@ -157,7 +175,7 @@
     // ===== DOM =====
     const fmtBtn = document.getElementById('fmtBtn');
     const themeBtn = document.getElementById('themeBtn');
-    const toggleListBtn = document.getElementById('toggleList');
+    const toggleDetailsBtn = document.getElementById('toggleDetails');
     const zonesEl = document.getElementById('zones');
 
     function applyTheme() {
@@ -172,15 +190,26 @@
     }
 
     function applyExpanded() {
-      toggleListBtn.textContent = state.expanded ? 'Hide extra' : 'Show all';
-      document.querySelectorAll('.zoneItem.hideable').forEach(el => {
-        el.style.display = state.expanded ? 'grid' : 'none';
-      });
+      zonesEl.classList.toggle('expanded', state.expanded);
+      toggleDetailsBtn.textContent = state.expanded ? 'Collapse details' : 'Expand details';
+      toggleDetailsBtn.setAttribute('aria-pressed', String(state.expanded));
     }
 
     themeBtn.addEventListener('click', () => { state.light = !state.light; applyTheme(); persist(); });
     fmtBtn.addEventListener('click', () => { state.hour12 = !state.hour12; applyFormat(); tick(); persist(); });
-    toggleListBtn.addEventListener('click', () => { state.expanded = !state.expanded; applyExpanded(); persist(); });
+    toggleDetailsBtn.addEventListener('click', () => { state.expanded = !state.expanded; applyExpanded(); persist(); });
+
+    // Hover swap for BLT labels
+    function setupHoverSwap(el) {
+      const base = el.getAttribute('data-base');
+      const hover = el.getAttribute('data-hover');
+      el.addEventListener('mouseenter', () => { el.textContent = hover; });
+      el.addEventListener('mouseleave', () => { el.textContent = base; });
+      el.addEventListener('focus', () => { el.textContent = hover; });
+      el.addEventListener('blur', () => { el.textContent = base; });
+    }
+
+    document.querySelectorAll('.hoverSwap').forEach(setupHoverSwap);
 
     // ===== Builders =====
     function formatTime(date, timeZone, hour12) {
@@ -218,18 +247,19 @@
 
     function buildZones() {
       zonesEl.innerHTML = '';
-      ZONES.forEach((z, i) => {
+      ZONES.forEach((z) => {
         const item = document.createElement('div');
-        item.className = 'zoneItem' + (i > 3 ? ' hideable' : ''); // show first few, hide rest by default
+        item.className = 'zoneItem';
         item.innerHTML = `
           <div>
-            <div class="zoneName">${z.label}</div>
-            <div class="zoneMeta">
-              <span class="chip" data-abbrev></span>
-              <span class="chip" data-offset></span>
+            <div class=\"zoneName\">${z.label}</div>
+            <div class=\"zoneMeta\">
+              <span class=\"chip\" data-abbrev></span>
+              <span class=\"chip\" data-offset></span>
+              <span class=\"chip\">${z.tz}</span>
             </div>
           </div>
-          <div class="zoneTime" data-time>00:00:00</div>
+          <div class=\"zoneTime\" data-time>00:00:00</div>
         `;
         zonesEl.appendChild(item);
         z._el = item;
@@ -244,8 +274,9 @@
       const bltMeta = tzMeta(now, BLT_TZ);
       document.getElementById('bltTime').textContent = bltFmt.time;
       document.getElementById('bltDate').textContent = bltFmt.date;
-      document.getElementById('bltZone').textContent = BLT_TZ;
-      document.getElementById('bltAbbrev').textContent = bltMeta.short || '—';
+      // Update hover targets with accurate hover text (ACDT/ACST)
+      const ab = document.getElementById('bltAbbrev');
+      ab.setAttribute('data-hover', bltMeta.short || 'ACDT');
       document.getElementById('bltOffset').textContent = bltMeta.offset || '—';
 
       // Zones
@@ -269,4 +300,3 @@
   </script>
 </body>
 </html>
-
