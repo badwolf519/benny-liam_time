@@ -1,6 +1,6 @@
 # Benny & Liam Time
 
-**Benny & Liam Time** is a lighthearted web project built around an inside joke between two friends, Benny (from Melbourne) and Liam (from Brisbane). When daylight saving time begins, their clocks go out of sync — Melbourne moves an hour ahead while Brisbane stays put. To fix this, they decided to meet halfway, creating their own fictional timezone: **Benny & Liam Time** — which, by coincidence, perfectly matches **South Australian time (UTC+10:30)**.
+**Benny & Liam Time** is a lighthearted web project built around an inside joke between two friends, Benny (from Melbourne) and Liam (from Brisbane). When daylight saving time begins, their clocks go out of sync — Melbourne moves an hour ahead while Brisbane stays put. To fix this, they decided to meet halfway, creating their own timezone: **Benny & Liam Time** — which by coincidence, perfectly matches **South Australian time (UTC+10:30)**.
 
 ---
 
@@ -8,13 +8,12 @@
 
 The site displays **Benny & Liam Time** as the central reference point and compares it to all major Australian time zones. It updates live every second, automatically adjusting for daylight saving transitions using the browser’s built-in `Intl.DateTimeFormat` API.
 
-The goal of the project is to visualise this funny in-between timezone idea in a polished, functional way — blending humour, simplicity, and accurate timekeeping.
-
+The goal of the project is to visualise this in-between timezone idea in a polished, functional way.
 ---
 
 ## 💡 Features
 
-* **Real-time clock** for Benny & Liam Time (Adelaide timezone)
+* **Real-time clock** for Benny & Liam Time (BLT timezone)
 * Additional clocks for every major Australian region:
 
   * Melbourne (VIC)
@@ -48,8 +47,7 @@ It relies on the **IANA timezone database** via JavaScript’s `Intl` API to ens
 
 ## 🎨 Design Philosophy
 
-The look and feel of the project aim to reflect a balance between functionality and playfulness — simple gradients, subtle glows, and rounded elements evoke a soft, modern vibe while keeping the focus on the clocks. The design intentionally avoids clutter to highlight the humour and curiosity behind the concept.
-
+The look and feel of the project aim to reflect a balance between functionality and playfulness — simple gradients, subtle glows and rounded elements evoke a soft, modern vibe while keeping the focus on the clocks.
 ---
 
 ## 📜 License
@@ -58,4 +56,4 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-**A tongue-in-cheek tribute to Australian timezones — and to Benny & Liam’s creative problem-solving.** 🇦🇺
+**A tribute to Benny & Liam’s creative problem-solving.** Made in Tasmania 🇦🇺
